@@ -1,4 +1,5 @@
 let memberMarkers = {};
+let memberData = {};
 let map;
 let memberContainer;
 const pos = [43.92452406053277, -92.46965157325293];
@@ -15,13 +16,31 @@ window.addEventListener('load', async () => {
     let circles = await life360.getCircles();
     let cricleId = circles[0].id;
     let members = await life360.getCircleMembers(cricleId);
+    let places = await life360.getCirclePlaces(cricleId);
     createMembers(members);
-    /*updateMembers(members);*/
+    createPlaces(places);
+    setInterval(async () => {
+        updateLocations(await life360.getCircleMembersLocation(cricleId));
+    }, 5000);
 });
 
 function createMembers(members) {
+    loadMembers(members);
     createMemberMarkers(members);
     createMemberElements(members);
+}
+
+function loadMembers(members) {
+    for (let member of members) {
+        let {
+            id,
+            firstName,
+            location: { name },
+        } = member;
+        memberData[id] = {};
+        memberData[id].lastLocation = name; //save last location
+        memberData[id].firstName = firstName;
+    }
 }
 
 function formatTime(time) {
@@ -118,33 +137,57 @@ function createMemberMarkers(users) {
         }
         memberMarkers[id] = [];
         const pos = [latitude, longitude];
-        const profilePictureIcon = L.icon({
+        const profilePictureIcon = L.divIcon({
+            className: 'profilePicture',
+            html: '<img src="' + avatar + '"/>',
             iconUrl: avatar,
             iconSize: [50, 50], // size of the icon
         });
         let profilePicture = L.marker(pos, {
             icon: profilePictureIcon,
             riseOnHover: true,
-            title: firstName,
+        });
+        profilePicture.bindTooltip(firstName);
+        profilePicture.on('click', () => {
+            map.flyTo(pos, 19, { duration: 0.5 });
         });
         profilePicture.addTo(map);
         memberMarkers[id].push(profilePicture);
-        const circle = L.circle(pos, {
-            color: '#8652ff',
-            fillColor: '#8652ff',
-            fillOpacity: 0.5,
-            radius: 50,
-        });
-        circle.addTo(map);
-        memberMarkers[id].push(circle);
     }
 }
 
-function updateLocations(locations) {
+async function updateLocations(locations) {
     for (let location of locations) {
-        let { userId, latitude, longitude } = location;
+        let { userId, latitude, longitude, name } = location;
+        //move marker
         for (let marker of memberMarkers[userId]) {
             marker.setLatLng([latitude, longitude]);
         }
+        //create notification if need be
+        if (memberData[userId].lastLocation != name) {
+            if (!name) {
+                await notifications.create(
+                    memberData[userId].firstName + ' left ' + memberData[userId].lastLocation
+                );
+            } else {
+                await notifications.create(memberData[userId].firstName + ' arrived at ' + name);
+            }
+
+            memberData[userId].lastLocation = name;
+        }
+    }
+}
+
+function createPlaces(places) {
+    for (let place of places) {
+        let { name, latitude, longitude, radius } = place;
+        const circle = L.circle([latitude, longitude], {
+            color: '#8652ff',
+            fillColor: '#8652ff',
+            fillOpacity: 0.5,
+            radius,
+        });
+        circle.bindTooltip(name);
+        circle.addTo(map);
     }
 }

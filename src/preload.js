@@ -23,6 +23,13 @@ contextBridge.exposeInMainWorld('life360', {
     },
 });
 
+contextBridge.exposeInMainWorld('notifications', {
+    create: async (title,description) => {
+        return await ipcRenderer.invoke('createNotification', title,description);
+    },
+});
+
+
 contextBridge.exposeInMainWorld('app', {
     changePage: async (page) => {
         return await ipcRenderer.invoke('changePage', page);

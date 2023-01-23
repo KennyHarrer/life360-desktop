@@ -1,5 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+
 body,p{
     margin: 0;
+    font-family: 'Poppins', sans-serif;
 }
 #map {
     width: 100vw;
@@ -75,6 +78,18 @@ body,p{
 
 .memberInfo {
     justify-content: space-around;
+}
+
+.profilePicture {
+    border-radius: 50%;
+    border: 3px solid white;
+    overflow: hidden;
+}
+
+.profilePicture > img {
+    height: 50px;
+    width: 50px;
+    object-fit: cover;
 }
 
 h1{ margin:0;}

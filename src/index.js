@@ -7,6 +7,10 @@ if (require('electron-squirrel-startup')) {
 }
 
 const createWindow = () => {
+    if (process.platform === 'win32') {
+        app.setAppUserModelId('com.github.kennyharrer');
+    }
+
     // Create the browser window.
     const mainWindow = new BrowserWindow({
         width: 800,
@@ -16,6 +20,7 @@ const createWindow = () => {
         },
     });
     require('./life360');
+    require('./notifications')
 
     // and load the index.html of the app.
     mainWindow.loadFile(path.join(__dirname, 'login', 'index.html'));
