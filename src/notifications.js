@@ -17,7 +17,9 @@ ipcMain.handle('createNotification', (event, title, description) => {
             preload: path.join(__dirname, 'preload.js'),
         },
     });
-
+    window.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+    window.setAlwaysOnTop(true, 'floating');
+    window.moveTop();
     window.loadURL(
         'file://' +
             path.join(

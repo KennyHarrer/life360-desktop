@@ -149,7 +149,7 @@ function createMemberMarkers(users) {
         });
         profilePicture.bindTooltip(firstName);
         profilePicture.on('click', () => {
-            map.flyTo(pos, 19, { duration: 0.5 });
+            map.flyTo(profilePicture.getLatLng(), 19, { duration: 0.5 });
         });
         profilePicture.addTo(map);
         memberMarkers[id].push(profilePicture);
