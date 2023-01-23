@@ -14,5 +14,5 @@ window.addEventListener('load', () => {
     descriptionElement.innerText = description == 'undefined' ? '' : description;
     setTimeout(() => {
         window.close();
-    }, 5000);
+    }, 10000);
 });
