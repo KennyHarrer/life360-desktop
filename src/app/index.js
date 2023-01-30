@@ -1,25 +1,53 @@
 let memberMarkers = {};
+let placeMarkers = {};
 let memberData = {};
 let map;
 let memberContainer;
+let circleSelector;
+let locationUpdater;
 
 window.addEventListener('load', async () => {
     memberContainer = document.getElementById('members');
+    circleSelector = document.getElementById('circleSelector');
     map = L.map('map').setView([0, 0], 1);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
     }).addTo(map);
 
     let circles = await life360.getCircles();
-    let cricleId = circles[0].id;
-    let members = await life360.getCircleMembers(cricleId);
-    let places = await life360.getCirclePlaces(cricleId);
+    createCircles(circles);
+    circleSelector.addEventListener('change', (event) => {
+        const selector = event.currentTarget;
+        const circleId = selector.value;
+        changeCircle(circleId);
+    });
+    let defaultCircleId = circles[0].id;
+    await changeCircle(defaultCircleId);
+});
+
+function createCircles(circles) {
+    for (let circle of circles) {
+        let { name, id } = circle;
+        let option = document.createElement('option');
+        option.innerText = name;
+        option.setAttribute('value', id);
+        circleSelector.appendChild(option);
+    }
+}
+
+async function changeCircle(circleId) {
+    let members = await life360.getCircleMembers(circleId);
+    let places = await life360.getCirclePlaces(circleId);
     createMembers(members);
     createPlaces(places);
-    setInterval(async () => {
-        updateLocations(await life360.getCircleMembersLocation(cricleId));
+    if (locationUpdater) clearInterval(locationUpdater);
+    locationUpdater = setInterval(async () => {
+        updateLocations(await life360.getCircleMembersLocation(circleId));
     }, 5000);
-});
+    //update map view
+    let { latitude, longitude } = members[0].location;
+    map.setView([latitude, longitude], 19);
+}
 
 function createMembers(members) {
     loadMembers(members);
@@ -28,6 +56,7 @@ function createMembers(members) {
 }
 
 function loadMembers(members) {
+    memberData = {}; //reset member data
     for (let member of members) {
         let {
             id,
@@ -70,6 +99,7 @@ function formatTime(time) {
 }
 
 function createMemberElements(users) {
+    memberContainer.innerHTML = ''; //remove all existing members
     for (let user of users) {
         let {
             avatar,
@@ -121,6 +151,11 @@ function createMemberElements(users) {
 }
 
 function createMemberMarkers(users) {
+    for (let markerArray of Object.values(memberMarkers)) {
+        for (let marker of markerArray) {
+            marker.remove(); //remove all already existing member markers
+        }
+    }
     for (let user of users) {
         let {
             id,
@@ -182,8 +217,11 @@ async function updateLocations(locations) {
 }
 
 function createPlaces(places) {
+    for (let marker of Object.values(placeMarkers)) {
+        marker.remove();
+    }
     for (let place of places) {
-        let { name, latitude, longitude, radius } = place;
+        let { name, latitude, longitude, radius, id } = place;
         const circle = L.circle([latitude, longitude], {
             color: '#8652ff',
             fillColor: '#8652ff',
@@ -192,5 +230,6 @@ function createPlaces(places) {
         });
         circle.bindTooltip(name);
         circle.addTo(map);
+        placeMarkers[id] = circle;
     }
 }

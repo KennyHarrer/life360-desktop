@@ -17,6 +17,22 @@ body,p{
     z-index: -1;
 }
 
+#circleContainer {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    width: 100vw;
+    top: 10px;
+}
+
+#circleSelector {
+    border-radius: 300px;
+    padding: 10px 20px;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+    border: 0;
+}
+
+
 #memberList {
     display: flex;
     justify-content: center;
