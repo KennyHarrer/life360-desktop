@@ -2,13 +2,10 @@ let memberMarkers = {};
 let memberData = {};
 let map;
 let memberContainer;
-const pos = [43.92452406053277, -92.46965157325293];
-let profilePicture =
-    'https://life360-img.s3.amazonaws.com/img/user_images/82a7dd40-c974-4016-bd26-72b71fc40832/735f5627-8396-4ab6-adb5-dd99fa7c2179.jpg?fd=2';
 
 window.addEventListener('load', async () => {
     memberContainer = document.getElementById('members');
-    map = L.map('map').setView(pos, 13);
+    map = L.map('map').setView([0, 0], 1);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
     }).addTo(map);
@@ -82,6 +79,7 @@ function createMemberElements(users) {
         } = user;
         const member = document.createElement('div');
         member.classList.add('member');
+        member.setAttribute('id', id);
         member.addEventListener('click', () => {
             map.flyTo(memberMarkers[id][0].getLatLng(), 19, { duration: 0.5 });
         });
@@ -106,8 +104,9 @@ function createMemberElements(users) {
         memberName.textContent = firstName;
         const memberStatus = document.createElement('p');
         memberStatus.textContent = name ? 'At ' + name : address1;
+        memberStatus.classList.add('location');
         const memberTime = document.createElement('p');
-
+        memberTime.classList.add('time');
         memberTime.textContent = formatTime(since);
 
         memberInfo.appendChild(memberName);
@@ -158,11 +157,15 @@ function createMemberMarkers(users) {
 
 async function updateLocations(locations) {
     for (let location of locations) {
-        let { userId, latitude, longitude, name } = location;
+        let { userId, latitude, longitude, name, address1, since } = location;
         //move marker
         for (let marker of memberMarkers[userId]) {
             marker.setLatLng([latitude, longitude]);
         }
+        //update member element
+        let memberElement = document.getElementById(userId);
+        memberElement.querySelector('p.location').textContent = name ? 'At ' + name : address1;
+        memberElement.querySelector('p.time').textContent = formatTime(since);
         //create notification if need be
         if (memberData[userId].lastLocation != name) {
             if (!name) {
