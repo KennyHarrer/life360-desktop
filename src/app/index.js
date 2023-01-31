@@ -5,6 +5,7 @@ let map;
 let memberContainer;
 let circleSelector;
 let locationUpdater;
+let lockedOnPerson;
 
 window.addEventListener('load', async () => {
     memberContainer = document.getElementById('members');
@@ -13,7 +14,11 @@ window.addEventListener('load', async () => {
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
     }).addTo(map);
-
+    map.on('mousedown', () => {
+        console.log('clicked');
+        lockedOnPerson = undefined;
+        map.options.scrollWheelZoom = true;
+    });
     let circles = await life360.getCircles();
     createCircles(circles);
     circleSelector.addEventListener('change', (event) => {
@@ -36,6 +41,8 @@ function createCircles(circles) {
 }
 
 async function changeCircle(circleId) {
+    lockedOnPerson = undefined;
+    map.options.scrollWheelZoom = true;
     let members = await life360.getCircleMembers(circleId);
     let places = await life360.getCirclePlaces(circleId);
     createMembers(members);
@@ -112,6 +119,8 @@ function createMemberElements(users) {
         member.setAttribute('id', id);
         member.addEventListener('click', () => {
             map.flyTo(memberMarkers[id][0].getLatLng(), 19, { duration: 0.5 });
+            lockedOnPerson = id;
+            map.options.scrollWheelZoom = 'center';
         });
 
         const profilePicture = document.createElement('div');
@@ -185,6 +194,8 @@ function createMemberMarkers(users) {
         profilePicture.bindTooltip(firstName);
         profilePicture.on('click', () => {
             map.flyTo(profilePicture.getLatLng(), 19, { duration: 0.5 });
+            lockedOnPerson = id;
+            map.options.scrollWheelZoom = 'center';
         });
         profilePicture.addTo(map);
         memberMarkers[id].push(profilePicture);
@@ -195,8 +206,12 @@ async function updateLocations(locations) {
     for (let location of locations) {
         let { userId, latitude, longitude, name, address1, since, battery } = location;
         //move marker
+        let pos = [latitude, longitude];
+        if (lockedOnPerson == userId) {
+            map.flyTo(pos, map.getZoom(), { duration: 0.25 });
+        }
         for (let marker of memberMarkers[userId]) {
-            marker.setLatLng([latitude, longitude]);
+            marker.setLatLng(pos);
         }
         //update member element
         let memberElement = document.getElementById(userId);

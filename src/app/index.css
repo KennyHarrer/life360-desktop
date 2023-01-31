@@ -3,7 +3,6 @@
 body {
     overflow-x:hidden;
 }
-
 body,p{
     margin: 0;
     font-family: 'Poppins', sans-serif;
@@ -18,7 +17,7 @@ body,p{
 }
 
 #circleContainer {
-    position: absolute;
+    position: fixed;
     display: flex;
     justify-content: center;
     width: 100vw;
