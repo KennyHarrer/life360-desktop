@@ -120,11 +120,12 @@ function createMemberElements(users) {
         const imageContainer = document.createElement('div');
         const image = document.createElement('img');
         image.src = avatar;
-        const percentage = document.createElement('p');
-        percentage.textContent = battery + '%';
+        const batteryPrecentage = document.createElement('p');
+        batteryPrecentage.classList.add('battery');
+        batteryPrecentage.textContent = battery + '%';
 
         imageContainer.appendChild(image);
-        imageContainer.appendChild(percentage);
+        imageContainer.appendChild(batteryPrecentage);
         profilePicture.appendChild(imageContainer);
 
         const memberInfo = document.createElement('div');
@@ -192,7 +193,7 @@ function createMemberMarkers(users) {
 
 async function updateLocations(locations) {
     for (let location of locations) {
-        let { userId, latitude, longitude, name, address1, since } = location;
+        let { userId, latitude, longitude, name, address1, since, battery } = location;
         //move marker
         for (let marker of memberMarkers[userId]) {
             marker.setLatLng([latitude, longitude]);
@@ -201,6 +202,7 @@ async function updateLocations(locations) {
         let memberElement = document.getElementById(userId);
         memberElement.querySelector('p.location').textContent = name ? 'At ' + name : address1;
         memberElement.querySelector('p.time').textContent = formatTime(since);
+        memberElement.querySelector('p.battery').textContent = battery + '%';
         //create notification if need be
         if (memberData[userId].lastLocation != name) {
             if (!name) {
