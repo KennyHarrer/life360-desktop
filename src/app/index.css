@@ -41,6 +41,7 @@ body,p{
     min-height: 100px;
     background: white;
     padding: 20px;
+    box-sizing: border-box;
 }
 
 #members {
