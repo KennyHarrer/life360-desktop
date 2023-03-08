@@ -15,7 +15,6 @@ window.addEventListener('load', async () => {
         maxZoom: 19,
     }).addTo(map);
     map.on('mousedown', () => {
-        console.log('clicked');
         lockedOnPerson = undefined;
         map.options.scrollWheelZoom = true;
     });
